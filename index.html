@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLF LABS | Homework: The Magic Pill?</title>
+    
+    <!-- Tipografia Épica -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Ícones Premium -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- PREMIUM CINEMATIC UI OVERHAUL --- */
+        :root {
+            --bg: #030408;
+            --surface: rgba(12, 14, 20, 0.85);
+            --surface-hover: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #1DB954;
+            --accent-glow: rgba(29, 185, 84, 0.4);
+            --correct: #1DB954;
+            --incorrect: #E50914;
+            --text-main: #FFFFFF;
+            --text-dim: #B3B3B3;
+            --font-display: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            /* Cinematic Background - Medical/Science Theme */
+            background: linear-gradient(to top, rgba(3,4,8,1) 5%, rgba(3,4,8,0.7) 100%), 
+                        url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- ATMOSFERA MÁGICA (ORBS) --- */
+        .ambient-orbs {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
+        }
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.25;
+            animation: floatOrb 20s infinite alternate ease-in-out;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -10%; left: -10%; }
+        .orb-2 { width: 500px; height: 500px; background: #0077ff; bottom: -10%; right: -10%; animation-delay: -5s; }
+
+        /* --- CABEÇALHO --- */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0; z-index: 100;
+            background: linear-gradient(to bottom, rgba(3,4,8,0.9), transparent);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-family: var(--font-display); font-weight: 900; font-size: 1rem; letter-spacing: 3px; color: #fff; }
+        .logo span { color: var(--accent); }
+        
+        .progress-bar-container {
+            position: absolute; bottom: -1px; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.05);
+        }
+        .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* --- CONTEÚDO PRINCIPAL --- */
+        main {
+            flex: 1;
+            margin-top: 80px;
+            margin-bottom: 100px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .step {
+            position: absolute;
+            width: 100%;
+            max-width: 900px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            overflow-y: auto;
+            max-height: 75vh;
+            padding: 10px;
+            scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+        }
+
+        .step.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            visibility: visible;
+            position: relative;
+        }
+
+        .step.exiting {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+
+        /* --- LAYOUT DUAL PANEL --- */
+        .dual-panel { display: flex; gap: 40px; align-items: center; text-align: left; }
+        .dual-panel > * { flex: 1; }
+        @media (max-width: 768px) { .dual-panel { flex-direction: column; text-align: center; } }
+
+        /* --- TIPOGRAFIA --- */
+        .tag { color: var(--accent); font-size: 0.8rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 5px; }
+        h1 { font-family: var(--font-display); font-size: 3.5rem; line-height: 1.1; margin-bottom: 10px; text-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        h2 { font-family: var(--font-display); font-size: 1.8rem; color: #fff; margin-bottom: 15px; }
+        p.subtitle { color: var(--text-dim); font-size: 1.1rem; margin-bottom: 20px; font-weight: 400; line-height: 1.6; }
+
+        .glass-card {
+            background: linear-gradient(135deg, rgba(20,22,30,0.85) 0%, rgba(10,12,15,0.95) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15);
+            text-align: center;
+        }
+        .question-text { font-size: 1.3rem; font-weight: 700; line-height: 1.5; color: #fff; margin-bottom: 20px;}
+
+        /* --- INTERACTIVE ELEMENTS --- */
+        .mc-options { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; margin-top: 10px;}
+        .mc-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 20px 25px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: left;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+        }
+        .mc-btn:hover { background: var(--surface-hover); border-color: var(--accent); transform: translateX(8px); }
+        .mc-btn.correct { border-color: var(--correct); background: rgba(29, 185, 84, 0.15); box-shadow: 0 0 20px rgba(29, 185, 84, 0.2); }
+        .mc-btn.correct::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; color: var(--accent); font-weight: 900; font-size: 1.2rem; }
+        .mc-btn.incorrect { border-color: var(--incorrect); background: rgba(229, 9, 20, 0.1); }
+        .mc-btn.incorrect::after { content: '\f00d'; font-family: 'Font Awesome 6 Free'; color: var(--incorrect); font-weight: 900; font-size: 1.2rem; }
+
+        /* --- BUILDER (V2.0 EXACT SPEC) --- */
+        .drop-zone {
+            min-height: 120px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.4);
+            transition: 0.3s;
+        }
+        .drop-zone.success { border-color: var(--correct); border-style: solid; background: rgba(29, 185, 84, 0.1); box-shadow: inset 0 0 30px rgba(29,185,84,0.15);}
+        
+        .word-bank { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .word-chip {
+            padding: 14px 28px;
+            background: var(--accent);
+            border: none;
+            border-radius: 500px;
+            color: #000;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+        }
+        .word-chip:hover { filter: brightness(1.1); transform: translateY(-4px); box-shadow: 0 8px 20px rgba(29, 185, 84, 0.4); }
+        .word-chip:active { transform: scale(0.95); }
+        .word-chip.used { opacity: 0; pointer-events: none; transform: scale(0.8); }
+
+        /* --- ERROR FINDER --- */
+        .highlight-zone { padding: 40px 30px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid var(--border); text-align: center; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
+        .error-sentence { font-size: 1.8rem; word-spacing: 6px; line-height: 1.8; font-weight: 700; color: #fff;}
+        .error-word { display: inline-block; padding: 6px 12px; cursor: pointer; border-radius: 10px; transition: 0.3s; border: 1px solid transparent;}
+        .error-word:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: scale(1.05); }
+
+        /* --- CHAT SCENARIO --- */
+        .chat-container { display: flex; flex-direction: column; gap: 18px; margin-top: 10px;}
+        .msg { padding: 18px 25px; border-radius: 20px; max-width: 85%; font-size: 1.15rem; line-height: 1.5; text-align: left;}
+        .msg.friend { background: #282828; align-self: flex-start; border-bottom-left-radius: 4px; color: #fff; border: 1px solid rgba(255,255,255,0.05); }
+        .msg.you { background: var(--accent); color: #000; align-self: flex-end; border-bottom-right-radius: 4px; display: none; font-weight: 700; box-shadow: 0 5px 15px var(--accent-glow);}
+        
+        .chat-option { padding: 20px; background: rgba(255,255,255,0.03); border-radius: 16px; cursor: pointer; text-align: left; color: #fff; font-weight: 600; border: 1px solid var(--border); transition: all 0.3s;}
+        .chat-option:hover { background: var(--surface-hover); border-color: var(--accent); transform: translateX(8px); }
+
+        /* --- NAVIGATION --- */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0; height: 100px;
+            background: linear-gradient(to top, rgba(3,4,8,1), rgba(3,4,8,0.8));
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .next-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 18px 0;
+            border-radius: 500px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            width: 100%;
+            max-width: 600px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-transform: uppercase;
+            font-family: var(--font-body);
+        }
+        .next-btn:disabled { opacity: 0.2; pointer-events: none; box-shadow: none; transform: none; }
+        .next-btn.ready { background: var(--accent); box-shadow: 0 10px 30px var(--accent-glow); transform: translateY(-3px); }
+
+        @keyframes floatOrb { 0% { transform: translate(0,0); } 100% { transform: translate(50px, 30px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-8px); } 50% { transform: translateX(8px); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="ambient-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <header class="header">
+        <div class="logo"><i class="fa-solid fa-capsules" style="color:var(--accent); margin-right: 10px;"></i>WOLF LABS <span>|</span> HOMEWORK</div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: var(--text-dim); letter-spacing: 3px;" id="step-counter">MISSION 1/11</div>
+        <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+    </header>
+
+    <main id="homework-container">
+        <!-- Intro -->
+        <section class="step active" id="step-0">
+            <div class="dual-panel">
+                <div>
+                    <div class="tag">HOMEWORK B1</div>
+                    <h1>The Magic<br>Pill?</h1>
+                    <p class="subtitle">Complete 10 challenges to master the vocabulary of modern medicine and the grammar of the Passive Voice.</p>
+                    <button class="next-btn ready" style="max-width: 320px;" onclick="nextStep()"><i class="fa-solid fa-play"></i> START MISSION</button>
+                </div>
+                <div class="glass-card" style="text-align: left; padding: 30px;">
+                    <h2 style="font-size: 1.1rem; margin-bottom: 20px;"><i class="fa-solid fa-list-check" style="color:var(--accent);"></i> OBJECTIVES</h2>
+                    <ul style="list-style: none; color: #fff; line-height: 2.2; font-weight: 600; font-size: 0.95rem;">
+                        <li><i class="fa-solid fa-circle-check" style="color:var(--accent); margin-right: 10px;"></i> Advanced Vocabulary</li>
+                        <li><i class="fa-solid fa-circle-check" style="color:var(--accent); margin-right: 10px;"></i> The Passive Voice (Present & Past)</li>
+                        <li><i class="fa-solid fa-circle-check" style="color:var(--accent); margin-right: 10px;"></i> Irregular Adjectives</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exercises will be injected here via script for cleaner code management -->
+    </main>
+
+    <!-- NAVIGATION BAR -->
+    <div class="bottom-bar" id="nav-container" style="display:none;">
+        <button class="next-btn" id="nextBtn" onclick="nextStep()">NEXT CHALLENGE <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <script>
+        const exercises = [
+            // 1: VOCAB
+            { type: 'mc', tag: 'VOCABULARY', text: 'Intrusive and unwanted constant thoughts about eating are known as...', options: [
+                { text: 'A dilemma', correct: false },
+                { text: 'Food noise', correct: true },
+                { text: 'Self-esteem', correct: false }
+            ]},
+            // 2: VOCAB
+            { type: 'mc', tag: 'VOCABULARY', text: 'An unexpected, usually bad, secondary effect of a medicine is a...', options: [
+                { text: 'Side effect', correct: true },
+                { text: 'Know-it-all', correct: false },
+                { text: 'Paradox', correct: false }
+            ]},
+            // 3: GRAMMAR MC
+            { type: 'mc', tag: 'GRAMMAR: PRESENT PASSIVE', text: 'Which sentence correctly focuses on the ACTION instead of the person?', options: [
+                { text: 'The drugs are injected into the body.', correct: true },
+                { text: 'The drugs injects into the body.', correct: false },
+                { text: 'Doctors is injected the drugs.', correct: false }
+            ]},
+            // 4: GRAMMAR MC
+            { type: 'mc', tag: 'GRAMMAR: PAST PASSIVE', text: 'Complete: "These drugs ________ originally for diabetes."', options: [
+                { text: 'were designed', correct: true },
+                { text: 'was designed', correct: false },
+                { text: 'are design', correct: false }
+            ]},
+            // 5: BUILDER
+            { type: 'builder', tag: 'SENTENCE BUILDER', text: 'Unscramble the words to describe how the medicine is applied.', target: ['The', 'drugs', 'are', 'injected', 'daily'], chips: ['injected', 'The', 'daily', 'are', 'drugs'] },
+            // 6: BUILDER
+            { type: 'builder', tag: 'SENTENCE BUILDER', text: 'Unscramble the words to state a fact about the drug\'s origin.', target: ['They', 'were', 'designed', 'for', 'diabetes'], chips: ['for', 'were', 'diabetes', 'They', 'designed'] },
+            // 7: ERROR DETECTION
+            { type: 'error', tag: 'ERROR DETECTION', text: 'Tap the word that breaks the passive voice rule.', sentence: ['The', 'medicine', 'is', 'take', 'every', 'morning.'], correctIdx: 3 },
+            // 8: ERROR DETECTION
+            { type: 'error', tag: 'ERROR DETECTION', text: 'Find the mistake with the irregular adjective.', sentence: ['The', 'traffic', 'is', 'worser', 'today', 'than', 'yesterday.'], correctIdx: 3 },
+            // 9: CHAT SCENARIO
+            { type: 'chat', tag: 'CHAT CHALLENGE', text: 'Your friend texts you with a crazy idea. Choose the best response.', options: [
+                { text: 'You shouldn\'t do that. You don\'t know what side effects they have.', correct: true },
+                { text: 'You shouldn\'t doing that. They are making in illegal labs.', correct: false }
+            ], msg: "I just bought some diet pills online without a prescription!" },
+            // 10: CHAT SCENARIO
+            { type: 'chat', tag: 'CHAT CHALLENGE', text: 'Your friend is scared of a new treatment.', options: [
+                { text: 'The medicine is test by professionals. Don\'t worry.', correct: false },
+                { text: 'The medicine is tested by professionals. Don\'t worry.', correct: true }
+            ], msg: "I heard the side effects are terrible. What if I get sick?" }
+        ];
+
+        let currentStep = 0;
+        let buildState = {};
+
+        function initExercises() {
+            const container = document.getElementById('homework-container');
+            exercises.forEach((ex, idx) => {
+                const section = document.createElement('section');
+                section.className = 'step';
+                section.id = `step-${idx + 1}`;
+                
+                let content = `<div class="tag">${ex.tag}</div>`;
+                
+                if (ex.type === 'mc') {
+                    content += `
+                        <div class="glass-card">
+                            <p class="question-text">${ex.text}</p>
+                            <div class="mc-options">
+                                ${ex.options.map(opt => `<button class="mc-btn" data-correct="${opt.correct}" onclick="selectOption(this)">${opt.text} <i class="fa-solid fa-chevron-right"></i></button>`).join('')}
+                            </div>
+                        </div>`;
+                } else if (ex.type === 'error') {
+                    content += `
+                        <div class="glass-card">
+                            <p class="question-text">${ex.text}</p>
+                            <div class="highlight-zone">
+                                <div class="error-sentence">
+                                    ${ex.sentence.map((word, wIdx) => `<span class="error-word" onclick="genericCorrect(this, ${wIdx === ex.correctIdx})">${word}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                } else if (ex.type === 'builder') {
+                    const dzId = `dz-${idx}`;
+                    buildState[dzId] = [];
+                    content += `
+                        <div class="glass-card">
+                            <p class="question-text" style="margin-bottom: 30px;">${ex.text}</p>
+                            <div class="drop-zone" id="${dzId}"></div>
+                            <div class="word-bank">
+                                ${ex.chips.map(word => `<div class="word-chip" onclick="moveWord(this, '${dzId}', ${JSON.stringify(ex.target).replace(/"/g, '&quot;')})">${word}</div>`).join('')}
+                            </div>
+                        </div>`;
+                } else if (ex.type === 'chat') {
+                    const chatId = `chat-${idx}`;
+                    content += `
+                        <div class="glass-card">
+                            <p class="question-text">${ex.text}</p>
+                            <div class="chat-container" id="${chatId}">
+                                <div class="msg friend">${ex.msg}</div>
+                                <div class="mc-options">
+                                    ${ex.options.map(opt => `<button class="chat-option" data-correct="${opt.correct}" onclick="handleChat(this, ${opt.correct}, '${chatId}')">${opt.text}</button>`).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                }
+
+                section.innerHTML = content;
+                container.appendChild(section);
+            });
+
+            // Add Outro
+            const outro = document.createElement('section');
+            outro.className = 'step';
+            outro.id = `step-${exercises.length + 1}`;
+            outro.innerHTML = `
+                <div class="glass-card" style="border-color: var(--accent); background: rgba(29, 185, 84, 0.05);">
+                    <div style="width: 100px; height: 100px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px auto; box-shadow: 0 0 50px var(--accent-glow);">
+                        <i class="fa-solid fa-trophy" style="font-size: 3rem; color: #000;"></i>
+                    </div>
+                    <h1 style="color: var(--accent); font-size: 3.5rem; text-shadow: none;">Mission Accomplished</h1>
+                    <p class="subtitle" style="color: #fff; font-weight: 600;">You have successfully completed all 10 challenges. Your B1 performance data is synced.</p>
+                    <button class="next-btn ready" style="max-width:300px; margin:0 auto;" onclick="alert('Session logged.')"><i class="fa-solid fa-power-off"></i> CLOSE SYSTEM</button>
+                </div>`;
+            container.appendChild(outro);
+        }
+
+        function updateUI() {
+            const steps = document.querySelectorAll('.step');
+            const totalSteps = steps.length;
+            const progressBar = document.getElementById('progressBar');
+            const stepCounter = document.getElementById('step-counter');
+            const nextBtn = document.getElementById('nextBtn');
+            const navContainer = document.getElementById('nav-container');
+
+            steps.forEach((step, index) => {
+                if(index === currentStep) {
+                    step.classList.remove('exiting');
+                    step.classList.add('active');
+                } else if (index < currentStep) {
+                    step.classList.remove('active');
+                    step.classList.add('exiting');
+                } else {
+                    step.classList.remove('active', 'exiting');
+                }
+            });
+
+            const progress = (currentStep / (totalSteps - 1)) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            if(currentStep === 0 || currentStep === totalSteps - 1) {
+                navContainer.style.display = 'none';
+            } else {
+                navContainer.style.display = 'flex';
+                nextBtn.disabled = true;
+                nextBtn.classList.remove('ready');
+            }
+
+            stepCounter.innerText = currentStep === 0 ? "MISSION START" : currentStep === totalSteps - 1 ? "FINISH" : `CHALLENGE ${currentStep}/${totalSteps - 2}`;
+        }
+
+        function nextStep() {
+            const steps = document.querySelectorAll('.step');
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        }
+
+        function selectOption(btn) {
+            const parentStep = btn.closest('.step');
+            if (parentStep.classList.contains('answered-correctly')) return;
+
+            if (btn.dataset.correct === "true") {
+                btn.classList.add('correct');
+                const allBtns = parentStep.querySelectorAll('.mc-btn');
+                allBtns.forEach(b => { if (b !== btn) b.style.opacity = '0.3'; b.style.pointerEvents = 'none'; });
+                parentStep.classList.add('answered-correctly');
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('nextBtn').classList.add('ready');
+            } else {
+                btn.classList.add('incorrect');
+                btn.style.animation = 'shake 0.4s';
+                btn.style.pointerEvents = 'none';
+                setTimeout(() => { btn.style.animation = ''; }, 400);
+            }
+        }
+
+        function moveWord(chip, dzId, targetArray) {
+            if(chip.classList.contains('used')) return;
+            const dz = document.getElementById(dzId);
+            const newChip = document.createElement('div');
+            newChip.className = 'word-chip';
+            newChip.style.background = 'var(--accent)';
+            newChip.style.color = '#000';
+            newChip.innerText = chip.innerText;
+            
+            if (!chip.id) chip.id = 'chip_' + Math.random().toString(36).substr(2, 9);
+            newChip.dataset.sourceId = chip.id;
+
+            newChip.onclick = function() {
+                if(dz.classList.contains('success')) return;
+                dz.removeChild(this);
+                document.getElementById(this.dataset.sourceId).classList.remove('used');
+                const idx = buildState[dzId].lastIndexOf(this.innerText);
+                if(idx !== -1) buildState[dzId].splice(idx, 1);
+            };
+
+            dz.appendChild(newChip);
+            chip.classList.add('used');
+            buildState[dzId].push(chip.innerText);
+
+            if(buildState[dzId].length === targetArray.length) {
+                if(JSON.stringify(buildState[dzId]) === JSON.stringify(targetArray)) {
+                    dz.classList.add('success');
+                    Array.from(dz.children).forEach(c => { c.style.cursor = 'default'; });
+                    document.getElementById('nextBtn').disabled = false;
+                    document.getElementById('nextBtn').classList.add('ready');
+                } else {
+                    dz.style.borderColor = 'var(--incorrect)';
+                    dz.style.animation = 'shake 0.4s';
+                    setTimeout(() => {
+                        dz.innerHTML = '';
+                        dz.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                        dz.style.animation = '';
+                        buildState[dzId] = [];
+                        chip.parentElement.querySelectorAll('.word-chip').forEach(c => c.classList.remove('used'));
+                    }, 1000);
+                }
+            }
+        }
+
+        function genericCorrect(btn, isCorrect) {
+            const parentStep = btn.closest('.step');
+            if (parentStep.classList.contains('answered-correctly')) return;
+
+            if(isCorrect) {
+                btn.style.backgroundColor = 'var(--correct)';
+                btn.style.color = '#000';
+                parentStep.classList.add('answered-correctly');
+                const words = btn.parentElement.querySelectorAll('.error-word');
+                words.forEach(w => { if(w !== btn) w.style.opacity = '0.3'; w.style.pointerEvents = 'none'; });
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('nextBtn').classList.add('ready');
+            } else {
+                btn.style.backgroundColor = 'var(--incorrect)';
+                btn.style.color = '#fff';
+                btn.style.animation = 'shake 0.4s';
+                setTimeout(() => { btn.style.animation = ''; btn.style.backgroundColor = 'transparent'; }, 800);
+            }
+        }
+
+        function handleChat(btn, isCorrect, chatId) {
+            const container = document.getElementById(chatId);
+            const parentStep = btn.closest('.step');
+            if (parentStep.classList.contains('answered-correctly')) return;
+
+            if(isCorrect) {
+                const options = container.querySelectorAll('.chat-option');
+                options.forEach(opt => opt.style.display = 'none');
+                container.innerHTML += `<div class="msg you">${btn.innerText}</div>`;
+                parentStep.classList.add('answered-correctly');
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('nextBtn').classList.add('ready');
+            } else {
+                btn.classList.add('incorrect');
+                btn.style.animation = 'shake 0.4s';
+                btn.style.pointerEvents = 'none';
+                setTimeout(() => { btn.style.animation = ''; }, 400);
+            }
+        }
+
+        window.onload = () => {
+            initExercises();
+            updateUI();
+        }
+    </script>
+</body>
+</html>
